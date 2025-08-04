@@ -1,0 +1,46 @@
+# ——————————————
+# Ejecutar todas las combinaciones de flags
+# ——————————————
+
+import pandas as pd
+
+# Definir los valores a probar
+regime_modes  = ['feature', 'separate']
+use_lime_opts = [False, True]
+online_opts   = [False, True]
+rfe_opts      = [None, 3]   # None = sin RFE; 3 = seleccionar top-3
+
+all_runs = []
+
+for regime in regime_modes:
+    for use_lime in use_lime_opts:
+        for online_adapt in online_opts:
+            for rfe_feats in rfe_opts:
+                print(f"\n=== Running: regime={regime}, LIME={use_lime}, ONLINE={online_adapt}, RFE={rfe_feats} ===")
+                
+                # Llamas a tu función principal
+                results_df, preds_df, dm_df, shock_df = benchmark_all_combinations(
+                    data_path=path_to_csv,
+                    max_configs=6,
+                    regime_mode=regime,
+                    output_dir='.',
+                    use_lime=use_lime,
+                    online_adapt=online_adapt,
+                    rfe_features=rfe_feats
+                )
+                
+                # Añadir metadatos de esta corrida
+                results_df['regime_mode_run']   = regime
+                results_df['run_use_lime']      = use_lime
+                results_df['run_online_adapt']  = online_adapt
+                results_df['run_rfe_feats']     = rfe_feats
+                
+                all_runs.append(results_df)
+
+# Concatenar todo y guardarlo
+final_df = pd.concat(all_runs, ignore_index=True)
+final_df.to_csv('results/todos_los_resultados.csv', index=False)
+
+# Mostrar un resumen rápido
+print("\n✅ Se han completado todas las corridas. Resultados guardados en 'results/todos_los_resultados.csv'")
+final_df.head()
